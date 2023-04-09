@@ -62,8 +62,10 @@ public class EchoSocket {
             out.println("bye");
             break;
           }
+          out.println(inputLine);
         }
-
+        
+        log.info("Closing connection");
         in.close();
         out.close();
         clientSocket.close();
