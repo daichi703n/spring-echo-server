@@ -24,7 +24,7 @@ public class TlsSocket {
     TlsSocket server=new TlsSocket();
     log.info("Start TLS Socket");
     try {
-      server.start(8444, "TLSv1.2", "src/main/resources/keystore/serverkey.p12", "password".toCharArray(), "src/main/resources/keystore/serverkey.p12", "password".toCharArray());
+      server.start(8444, "TLSv1.2", "src/main/resources/keystore/daichi703n-ca.p12", "password".toCharArray(), "src/main/resources/keystore/daichi703n-server.p12", "password".toCharArray());
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

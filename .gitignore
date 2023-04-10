@@ -6,7 +6,11 @@ target/
 
 *.p12
 *.jks
+*.csr
 *.crt
+*.key
+*.cnf
+*.srl
 
 ### STS ###
 .apt_generated

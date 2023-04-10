@@ -187,8 +187,7 @@ xObycHNEb0XgBb29VQ==
 Verification: OK
 
 ```
-$ openssl s_client -connect localhost:8444 -verifyCAfile ./src/main/r
-esources/keystore/server.crt
+$ openssl s_client -connect localhost:8444 -verifyCAfile ./src/main/resources/keystore/server.crt
 CONNECTED(00000003)
 Can't use SSL_get_servername
 depth=0 C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
@@ -244,6 +243,99 @@ world
 world
 !
 !
+.
+bye
+closed
+```
+
+## Migrate to CA Signed Cert
+
+### Generate Certs
+```
+openssl genrsa -aes256 -out ca.key 4096
+<password>
+openssl req -subj "/C=JP/ST=Tokyo/CN=daichi703n CA" -new -x509 -days 36500 -key ca.key -sha256 -out ca.crt
+<password>
+openssl genrsa -out server.key 4096
+openssl req -subj "/C=JP/ST=Tokyo/OU=daichi703n/CN=localhost" -sha256 -new -key server.key -out server.csr
+echo subjectAltName = DNS:localhost,IP:127.0.0.1 > extfile.cnf
+echo extendedKeyUsage = serverAuth >> extfile.cnf
+openssl x509 -days 36500 -req -in server.csr -CA ./ca.crt -CAkey ./ca.key -CAcreateserial -extfile extfile.cnf -out server.crt
+<password>
+```
+
+```
+openssl pkcs12 -export -inkey ca.key -in ca.crt -out ca.p12
+<ca.key password>
+<p12 password>
+```
+
+```
+openssl pkcs12 -export -inkey server.key -in server.crt -out server.p12
+<p12 password>
+```
+
+```
+cp ca.p12 src/main/resources/keystore/daichi703n-ca.p12
+cp server.p12 src/main/resources/keystore/daichi703n-server.p12
+```
+
+### After Replace Certs
+```
+$ openssl s_client -connect localhost:8444 -verifyCAfile ca.crt
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=1 C = JP, ST = Tokyo, CN = daichi703n CA
+verify return:1
+depth=0 C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+verify return:1
+---
+Certificate chain
+ 0 s:C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+   i:C = JP, ST = Tokyo, CN = daichi703n CA
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIFPjCCAyagAwIBAgIUKinWGgGrBwYuyNDOl4i+ZfRDsP0wDQYJKoZIhvcNAQEL
+...
+wP4aGn0MXzMN1T6+R1rAyEA3CUZkPUVpaqnd1QWBj1ULXcJ4lB4qTSEmRFAFZegJ
+6A0=
+-----END CERTIFICATE-----
+subject=C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+
+issuer=C = JP, ST = Tokyo, CN = daichi703n CA
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2072 bytes and written 382 bytes
+Verification: OK
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Server public key is 4096 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: 3C52C05E47CC7B6D61E5FE7FF0CFDC58978F69F93BBFDBCA3642F4177536E3F9
+    Session-ID-ctx:
+    Master-Key: 3D526B7A34D1A21E3227530034666DFE2918EE813FC470E6EA8461579C8BD4555D6F87144801080DBCD308AE28B8C5B0
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1681129383
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: yes
+---
+hi
+hi
 .
 bye
 closed

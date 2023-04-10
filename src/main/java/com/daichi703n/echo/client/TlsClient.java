@@ -18,7 +18,7 @@ public class TlsClient {
   
   private static final Logger log = LogManager.getLogger(TlsClient.class);
   
-  private static final String trustStoreName = "src/main/resources/keystore/serverkey.p12";
+  private static final String trustStoreName = "src/main/resources/keystore/daichi703n-ca.p12";
   private static final char[] trustStorePassword = "password".toCharArray();
   
   public void startConnection(String ip, int port) throws UnknownHostException, IOException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException {
