@@ -341,6 +341,257 @@ bye
 closed
 ```
 
+## mTLS
+
+### Generate Client Cert
+```
+openssl genrsa -out client.key 4096
+openssl req -subj "/C=JP/ST=Tokyo/OU=daichi703n/CN=client" -new -key client.key -out client.csr 
+echo basicConstraints = CA:FALSE > extfile.cnf
+echo nsCertType = client, email >> extfile.cnf
+echo subjectKeyIdentifier = hash >> extfile.cnf
+echo authorityKeyIdentifier = keyid,issuer >> extfile.cnf
+echo keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment >> extfile.cnf
+echo extendedKeyUsage = clientAuth, emailProtection >> extfile.cnf
+openssl x509 -days 3650 -req -in client.csr -CA ./ca.crt -CAkey ./ca.key -CAcreateserial -extfile extfile.cnf -out client.crt
+```
+
+```
+$ openssl x509 -text -in ./client.crt 
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            2a:29:d6:1a:01:ab:07:06:2e:c8:d0:ce:97:88:be:65:f4:43:b0:ff
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = JP, ST = Tokyo, CN = daichi703n CA
+        Validity
+            Not Before: Apr 10 13:12:06 2023 GMT
+            Not After : Apr  7 13:12:06 2033 GMT
+        Subject: C = JP, ST = Tokyo, OU = daichi703n, CN = client
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (4096 bit)
+                Modulus:
+                    00:bf:a8:a0:9f:43:eb:6d:cc:e0:80:2a:4c:82:7f:
+                    ...
+                    0c:6c:c0:95:eb:5a:f1:24:32:1d:48:d6:d8:52:df:
+                    ef:8b:d1
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Cert Type: 
+                SSL Client, S/MIME
+            X509v3 Subject Key Identifier: 
+                3C:0E:A9:1F:C4:4A:9A:65:35:C0:06:FA:F3:D5:6F:1C:EC:F4:08:78
+            X509v3 Authority Key Identifier: 
+                keyid:4F:60:29:30:4C:71:08:13:72:D1:20:B5:BF:7B:A4:40:07:FE:70:4F
+
+            X509v3 Key Usage: critical
+                Digital Signature, Non Repudiation, Key Encipherment
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication, E-mail Protection
+    Signature Algorithm: sha256WithRSAEncryption
+         43:d7:19:c8:f7:c3:c1:86:c0:fa:65:6f:d2:53:f7:35:06:7b:
+         ...
+         43:3e:b9:eb:8a:5f:74:63
+-----BEGIN CERTIFICATE-----
+MIIFlzCCA3+gAwIBAgIUKinWGgGrBwYuyNDOl4i+ZfRDsP8wDQYJKoZIhvcNAQEL
+...
+IXwLVMTXyUITE8JN159aganAkEoRRinj7cJaMKILQ5HyqhVDPrnril90Yw==
+-----END CERTIFICATE-----
+```
+
+```
+openssl pkcs12 -export -inkey client.key -in client.crt -out client.p12
+<p12 password>
+```
+
+```
+cp client.p12 src/main/resources/keystore/daichi703n-client.p12
+```
+
+### Client Cert Required
+```
+$ openssl s_client -connect localhost:8333 -verifyCAfile ./cert/ca.crt
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=1 C = JP, ST = Tokyo, CN = daichi703n CA
+verify return:1
+depth=0 C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+verify return:1
+139927674361152:error:14094412:SSL routines:ssl3_read_bytes:sslv3 alert bad certificate:../ssl/record/rec_layer_s3.c:1543:SSL alert number 42
+---
+Certificate chain
+ 0 s:C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+   i:C = JP, ST = Tokyo, CN = daichi703n CA
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIFPjCCAyagAwIBAgIUKinWGgGrBwYuyNDOl4i+ZfRDsP0wDQYJKoZIhvcNAQEL
+...
+wP4aGn0MXzMN1T6+R1rAyEA3CUZkPUVpaqnd1QWBj1ULXcJ4lB4qTSEmRFAFZegJ
+6A0=
+-----END CERTIFICATE-----
+subject=C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+
+issuer=C = JP, ST = Tokyo, CN = daichi703n CA
+
+---
+Acceptable client certificate CA names
+C = JP, ST = Tokyo, CN = daichi703n CA
+Client Certificate Types: ECDSA sign, RSA sign, DSA sign
+Requested Signature Algorithms: ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:DSA+SHA256:ECDSA+SHA224:RSA+SHA224:DSA+SHA224:ECDSA+SHA1:RSA+SHA1:DSA+SHA1
+Shared Requested Signature Algorithms: ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:DSA+SHA256:ECDSA+SHA224:RSA+SHA224:DSA+SHA224:ECDSA+SHA1:RSA+SHA1:DSA+SHA1
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2140 bytes and written 394 bytes
+Verification: OK
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Server public key is 4096 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: 12ECB746FD4C2459D4E41BD1287222B1231EE769C545438589BF3DD0FC87C984
+    Session-ID-ctx:
+    Master-Key: 26233C70BDD345AF3BDC029B43B412F5ECC9D2C79B85A0CCB453F52F34DE2CDC031692A4BED610C60A75FE574BD64926
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1681132839
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: yes
+---
+```
+
+```
+
+INFO 20654 --- [           main] com.daichi703n.echo.EchoApplication      : Started EchoApplication in 8.905 seconds (JVM running for 9.881)
+INFO 20654 --- [asyncExecutor-2] com.daichi703n.echo.socket.MTlsSocket    : Start mTLS Socket
+INFO 20654 --- [asyncExecutor-3] com.daichi703n.echo.socket.TlsSocket     : Start TLS Socket
+INFO 20654 --- [asyncExecutor-1] com.daichi703n.echo.socket.EchoSocket    : Start Echo Socket
+INFO 20654 --- [asyncExecutor-1] com.daichi703n.echo.socket.EchoSocket    : Start listening port 8888
+INFO 20654 --- [asyncExecutor-2] com.daichi703n.echo.socket.MTlsSocket    : Start listening port 8333
+INFO 20654 --- [asyncExecutor-3] com.daichi703n.echo.socket.TlsSocket     : Start listening port 8444
+INFO 20654 --- [on(1)-127.0.0.1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+INFO 20654 --- [on(1)-127.0.0.1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+INFO 20654 --- [on(1)-127.0.0.1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+INFO 20654 --- [       Thread-1] com.daichi703n.echo.socket.MTlsSocket    : Accepted connection from 0:0:0:0:0:0:0:1 on port 58201
+javax.net.ssl.SSLHandshakeException: Empty server certificate chain
+        at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+        at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:117)
+        at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:336)
+        at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:292)
+        at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:283)
+        at java.base/sun.security.ssl.CertificateMessage$T12CertificateConsumer.onCertificate(CertificateMessage.java:390)
+        at java.base/sun.security.ssl.CertificateMessage$T12CertificateConsumer.consume(CertificateMessage.java:375)
+        at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:392)
+        at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:443)
+        at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:421)
+        at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:182)
+        at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:171)
+        at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1418)
+        at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1324)
+        at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:440)
+        at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:829)
+        at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:920)
+        at java.base/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:284)
+        at java.base/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:326)
+        at java.base/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:178)
+        at java.base/java.io.InputStreamReader.read(InputStreamReader.java:181)
+        at java.base/java.io.BufferedReader.fill(BufferedReader.java:161)
+        at java.base/java.io.BufferedReader.readLine(BufferedReader.java:326)
+        at java.base/java.io.BufferedReader.readLine(BufferedReader.java:392)
+        at com.daichi703n.echo.socket.MTlsSocket$EchoClientHandler.run(MTlsSocket.java:105)
+```
+
+### with Cliect Cert
+```
+$ openssl s_client -connect localhost:8333 -verifyCAfile ./cert/ca.crt -cert cert/client.crt -key cert/client.key
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=1 C = JP, ST = Tokyo, CN = daichi703n CA
+verify return:1
+depth=0 C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+verify return:1
+---
+Certificate chain
+ 0 s:C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+   i:C = JP, ST = Tokyo, CN = daichi703n CA
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIFPjCCAyagAwIBAgIUKinWGgGrBwYuyNDOl4i+ZfRDsP0wDQYJKoZIhvcNAQEL
+...
+wP4aGn0MXzMN1T6+R1rAyEA3CUZkPUVpaqnd1QWBj1ULXcJ4lB4qTSEmRFAFZegJ
+6A0=
+-----END CERTIFICATE-----
+subject=C = JP, ST = Tokyo, OU = daichi703n, CN = localhost
+
+issuer=C = JP, ST = Tokyo, CN = daichi703n CA
+
+---
+Acceptable client certificate CA names
+C = JP, ST = Tokyo, CN = daichi703n CA
+Client Certificate Types: ECDSA sign, RSA sign, DSA sign
+Requested Signature Algorithms: ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:DSA+SHA256:ECDSA+SHA224:RSA+SHA224:DSA+SHA224:ECDSA+SHA1:RSA+SHA1:DSA+SHA1
+Shared Requested Signature Algorithms: ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:DSA+SHA256:ECDSA+SHA224:RSA+SHA224:DSA+SHA224:ECDSA+SHA1:RSA+SHA1:DSA+SHA1
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2184 bytes and written 2357 bytes
+Verification: OK
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Server public key is 4096 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: BE8AAEF6F00C99617C47D9DE5BB6E4CFB709697358F3F7E512CEDCD069406E88
+    Session-ID-ctx:
+    Master-Key: 24724C11C912B191661527CE1E3F54149A164A4711563C77463B6EA482FC65AE73F46C4626A430C132D67108E6CCE672
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1681133066
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: yes
+---
+Hello
+Hello
+World
+World
+!
+!
+.
+bye
+closed
+```
+
+```
+INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Accepted connection from 0:0:0:0:0:0:0:1 on port 58419
+INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Received: Hello
+INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Received: World
+INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Received: !
+INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Received: .
+INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Closing connection
+```
+
 ## References
 - [A Guide to Java Sockets](https://www.baeldung.com/a-guide-to-java-sockets)
 - [誤解しがちなThreadPoolTaskExecutorの設定](https://ik.am/entries/443)
