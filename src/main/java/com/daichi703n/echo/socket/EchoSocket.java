@@ -50,6 +50,10 @@ public class EchoSocket {
     }
 
     public void run() {
+      InetAddress clientAddress = clientSocket.getInetAddress();
+      int clientPort = clientSocket.getPort();
+      log.info("Accepted connection from " + clientAddress.getHostAddress() + " on port " + clientPort);
+
       try{
         out = new PrintWriter(clientSocket.getOutputStream(), true);
         in = new BufferedReader(
