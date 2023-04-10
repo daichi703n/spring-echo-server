@@ -34,6 +34,16 @@ INFO 6130 --- [       Thread-1] com.daichi703n.echo.socket.EchoSocket    : Recei
 INFO 6130 --- [       Thread-1] com.daichi703n.echo.socket.EchoSocket    : Closing connection
 ```
 
+### test
+```
+[INFO] Running com.daichi703n.echo.client.EchoClientTest
+[main] INFO com.daichi703n.echo.client.EchoClient - Send: hello
+[main] INFO com.daichi703n.echo.client.EchoClient - Send: world
+[main] INFO com.daichi703n.echo.client.EchoClient - Send: !
+[main] INFO com.daichi703n.echo.client.EchoClient - Send: .
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s - in com.daichi703n.echo.client.EchoClientTest
+```
+
 ## TLS Socket Server
 
 ```
@@ -246,6 +256,16 @@ world
 .
 bye
 closed
+```
+
+### test
+```
+[INFO] Running com.daichi703n.echo.client.TlsClientTest
+[main] INFO com.daichi703n.echo.client.TlsClient - Send: hello
+[main] INFO com.daichi703n.echo.client.TlsClient - Send: world
+[main] INFO com.daichi703n.echo.client.TlsClient - Send: !
+[main] INFO com.daichi703n.echo.client.TlsClient - Send: .
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.407 s - in com.daichi703n.echo.client.TlsClientTest
 ```
 
 ## Migrate to CA Signed Cert
@@ -590,6 +610,16 @@ INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Rece
 INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Received: !
 INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Received: .
 INFO 20654 --- [       Thread-2] com.daichi703n.echo.socket.MTlsSocket    : Closing connection
+```
+
+### test
+```
+[INFO] Running com.daichi703n.echo.client.MTlsClientTest
+[main] INFO com.daichi703n.echo.client.MTlsClient - Send: hello
+[main] INFO com.daichi703n.echo.client.MTlsClient - Send: world
+[main] INFO com.daichi703n.echo.client.MTlsClient - Send: !
+[main] INFO com.daichi703n.echo.client.MTlsClient - Send: .
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.611 s - in com.daichi703n.echo.client.MTlsClientTest
 ```
 
 ## References
