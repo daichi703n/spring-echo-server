@@ -138,6 +138,117 @@ Is CN=daichi703n, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correc
   [no]:  yes
 ```
 
+### Export Cert
+```
+keytool -exportcert -rfc -keystore src/main/resources/keystore/serverkey.p12 -storetype PKCS12 -storepass password -alias serverkey -file src/main/resources/keystore/server.crt
+---
+Certificate stored in file <src/main/resources/keystore/server.crt>
+```
+
+```
+$ openssl x509 -text -in src/main/resources/keystore/server.crt 
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1537237068 (0x5ba0604c)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+        Validity
+            Not Before: Apr 10 05:21:40 2023 GMT
+            Not After : Apr  7 05:21:40 2033 GMT
+        Subject: C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:8d:b1:b9:cb:58:c2:85:2a:3c:76:a7:1a:e5:15:
+                    ...
+                    98:af:54:27:0e:12:3c:9c:53:8a:55:23:77:10:d4:
+                    8e:57
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                BD:E9:AC:42:B3:4E:68:02:86:A8:DF:A4:8C:0A:3A:24:F9:1B:5C:49
+            X509v3 Subject Alternative Name: 
+                IP Address:127.0.0.1, DNS:localhost
+    Signature Algorithm: sha256WithRSAEncryption
+         5e:69:a2:7e:67:d1:ba:76:22:51:8a:1e:93:8d:52:f9:f2:3d:
+         ...
+         1c:8d:bf:84:5c:19:7e:b9:cd:c4:e6:f2:70:73:44:6f:45:e0:
+         05:bd:bd:55
+-----BEGIN CERTIFICATE-----
+MIIDmTCCAoGgAwIBAgIEW6BgTDANBgkqhkiG9w0BAQsFADBvMRAwDgYDVQQGEwdV
+...
+NZB8ur+orW9XXVxOQW5ZNcwibn40gzo1T3yKZE3x8tbCHd9Hv4SoHI2/hFwZfrnN
+xObycHNEb0XgBb29VQ==
+-----END CERTIFICATE-----
+```
+
+Verification: OK
+
+```
+$ openssl s_client -connect localhost:8444 -verifyCAfile ./src/main/r
+esources/keystore/server.crt
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=0 C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+verify return:1
+---
+Certificate chain
+ 0 s:C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+   i:C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDmTCCAoGgAwIBAgIEW6BgTDANBgkqhkiG9w0BAQsFADBvMRAwDgYDVQQGEwdV
+...
+NZB8ur+orW9XXVxOQW5ZNcwibn40gzo1T3yKZE3x8tbCHd9Hv4SoHI2/hFwZfrnN
+xObycHNEb0XgBb29VQ==
+-----END CERTIFICATE-----
+subject=C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+
+issuer=C = Unknown, ST = Unknown, L = Unknown, O = Unknown, OU = Unknown, CN = daichi703n
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 1395 bytes and written 382 bytes
+Verification: OK
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: 94120A620EE539467EBCBBD8C3948F2565D4897628CB67226D12C988F751455A
+    Session-ID-ctx:
+    Master-Key: D04B8065A454EFCF14E3567B1AFA682726FFD5CB4E2355EA917C636CF05E580B8563BE599C4F19DD05F06A02C03F8D02
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1681113001
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: yes
+---
+hello
+hello
+world
+world
+!
+!
+.
+bye
+closed
+```
+
 ## References
 - [A Guide to Java Sockets](https://www.baeldung.com/a-guide-to-java-sockets)
 - [誤解しがちなThreadPoolTaskExecutorの設定](https://ik.am/entries/443)
@@ -147,3 +258,4 @@ Is CN=daichi703n, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correc
 - ~~[Java HTTPS Client Certificate Authentication](https://www.baeldung.com/java-https-client-certificate-authentication)~~ HTTPS
 - ~~[HTTPS using Self-Signed Certificate in Spring Boot](https://www.baeldung.com/spring-boot-https-self-signed-certificate)~~ HTTPS
 - ~~[SSLServerSocket and certificate setup](https://stackoverflow.com/questions/53323855/sslserversocket-and-certificate-setup)~~
+- [【Java】SSL通信を実装する](https://ohs30359.hatenablog.com/entry/2016/07/16/174029)
