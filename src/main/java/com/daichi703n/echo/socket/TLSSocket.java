@@ -13,19 +13,17 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MTlsSocket {
+public class TLSSocket {
 
-    private static final Logger log = LogManager.getLogger(MTlsSocket.class);
+    private static final Logger log = LogManager.getLogger(TLSSocket.class);
 
     @EventListener
     @Async
     public void run(ContextRefreshedEvent cre) throws Exception {
-        MTlsSocket server = new MTlsSocket();
+        log.info("Start TLS Socket");
 
-        log.info("Start mTLS Socket");
-
-        server.start(
-                8333,
+        start(
+                8444,
                 "TLSv1.2",
                 "src/main/resources/keystore/daichi703n-ca.p12",
                 "password".toCharArray(),
@@ -41,48 +39,38 @@ public class MTlsSocket {
             char[] trustStorePassword,
             String keyStoreName,
             char[] keyStorePassword) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("pkcs12");
-        keyStore.load(
-                new FileInputStream(keyStoreName),
-                keyStorePassword
-        );
-
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(keyStore, keyStorePassword);
 
-        KeyStore trustStore = KeyStore.getInstance("pkcs12");
-        trustStore.load(
-                new FileInputStream(trustStoreName),
-                trustStorePassword
-        );
+        KeyStore keyStore = KeyStore.getInstance("pkcs12");
+        keyStore.load(new FileInputStream(keyStoreName), keyStorePassword);
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-        trustManagerFactory.init(trustStore);
+        keyManagerFactory.init(keyStore, trustStorePassword);
 
         SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        ctx.init(keyManagerFactory.getKeyManagers(), null, null);
 
         try (SSLServerSocket sslServerSocket = (SSLServerSocket) ctx
                 .getServerSocketFactory()
                 .createServerSocket(port)) {
             sslServerSocket.setEnabledProtocols(new String[]{tlsVersion});
-            sslServerSocket.setNeedClientAuth(true);
+            sslServerSocket.setNeedClientAuth(false);
 
             log.info("Start listening port {}", port);
 
-            while (true)
+            while (true) {
                 new EchoClientHandler(sslServerSocket.accept()).start();
+            }
         }
     }
 
     private static class EchoClientHandler extends Thread {
-
         private final Socket clientSocket;
 
         public EchoClientHandler(Socket socket) {
             this.clientSocket = socket;
         }
 
+        @Override
         public void run() {
             InetAddress clientAddress = clientSocket.getInetAddress();
             int clientPort = clientSocket.getPort();
