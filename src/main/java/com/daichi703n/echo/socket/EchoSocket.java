@@ -12,70 +12,70 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EchoSocket {
-  private ServerSocket serverSocket;
-  
-  private static final Logger log = LogManager.getLogger(EchoSocket.class);
-  
-  @EventListener
-  @Async
-  public void run(ContextRefreshedEvent cse) {
-    EchoSocket server=new EchoSocket();
-    log.info("Start Echo Socket");
-    try {
-      server.start(8888);
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-  }
 
-  public void start(int port) throws IOException {
-    serverSocket = new ServerSocket(port);
-    log.info("Start listening port {}",port);
-    while (true)
-      new EchoClientHandler(serverSocket.accept()).start();
-  }
-  
-  public void stop() throws IOException {
-    serverSocket.close();
-  }
-  
-  private static class EchoClientHandler extends Thread {
-    private Socket clientSocket;
-    private PrintWriter out;
-    private BufferedReader in;
+    private static final Logger log = LogManager.getLogger(EchoSocket.class);
 
-    public EchoClientHandler(Socket socket) {
-      this.clientSocket = socket;
+    @EventListener
+    @Async
+    public void run(ContextRefreshedEvent cre) throws IOException {
+        log.info("Start Echo Socket");
+
+        start(8888);
     }
 
-    public void run() {
-      InetAddress clientAddress = clientSocket.getInetAddress();
-      int clientPort = clientSocket.getPort();
-      log.info("Accepted connection from " + clientAddress.getHostAddress() + " on port " + clientPort);
+    public void start(int port) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(port);
 
-      try{
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
-        in = new BufferedReader(
-          new InputStreamReader(clientSocket.getInputStream()));
-          
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-          log.info("Received: "+inputLine);
-          if (".".equals(inputLine)) {
-            out.println("bye");
-            break;
-          }
-          out.println(inputLine);
+        log.info("Start listening port {}", port);
+
+        while (true) {
+            new EchoClientHandler(serverSocket.accept()).start();
         }
-        
-        log.info("Closing connection");
-        in.close();
-        out.close();
-        clientSocket.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
     }
-  }
+
+    private static class EchoClientHandler extends Thread {
+
+        private final Socket clientSocket;
+
+        public EchoClientHandler(Socket socket) {
+            this.clientSocket = socket;
+        }
+
+        @Override
+        public void run() {
+            InetAddress clientAddress = clientSocket.getInetAddress();
+            int clientPort = clientSocket.getPort();
+
+            log.info(
+                    "Accepted connection from {} on port {}",
+                    clientAddress.getHostAddress(),
+                    clientPort
+            );
+
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    log.info("Received: {}", inputLine);
+
+                    if (inputLine.equals(".")) {
+                        out.println("bye");
+                        break;
+                    } else {
+                        out.println(inputLine);
+                    }
+                }
+
+                log.info("Closing connection");
+
+                in.close();
+                out.close();
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
