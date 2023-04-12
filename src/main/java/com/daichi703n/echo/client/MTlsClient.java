@@ -25,44 +25,44 @@ public class MTlsClient {
   private static final char[] keyStorePassword = "password".toCharArray();
   
   public void startConnection(String ip, int port) throws UnknownHostException, IOException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException, UnrecoverableKeyException {
-      FileInputStream key_p12_file = new FileInputStream(keyStoreName);
-      FileInputStream trust_p12_file = new FileInputStream(trustStoreName);
-      KeyManagerFactory kmf;
-      KeyStore ks;
-      ks = KeyStore.getInstance("pkcs12");
-      ks.load(key_p12_file, keyStorePassword);
+    FileInputStream key_p12_file = new FileInputStream(keyStoreName);
+    FileInputStream trust_p12_file = new FileInputStream(trustStoreName);
+    KeyManagerFactory kmf;
+    KeyStore ks;
+    ks = KeyStore.getInstance("pkcs12");
+    ks.load(key_p12_file, keyStorePassword);
 
-      kmf = KeyManagerFactory.getInstance("SunX509");
-      kmf.init(ks, keyStorePassword);
+    kmf = KeyManagerFactory.getInstance("SunX509");
+    kmf.init(ks, keyStorePassword);
 
-      TrustManagerFactory tmf;
-      KeyStore ts;
-      ts = KeyStore.getInstance("pkcs12");
-      ts.load(trust_p12_file, trustStorePassword);
-      
-      tmf = TrustManagerFactory.getInstance("SunX509");
-      tmf.init(ts);
-      
-      SSLContext ctx = SSLContext.getInstance("TLS");
-      ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-      SSLSocketFactory ssf = (SSLSocketFactory) ctx.getSocketFactory();
-      SSLSocket clientSocket = (SSLSocket)ssf.createSocket(ip, port); 
-      
-      out = new PrintWriter(clientSocket.getOutputStream(), true);
-      in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+    TrustManagerFactory tmf;
+    KeyStore ts;
+    ts = KeyStore.getInstance("pkcs12");
+    ts.load(trust_p12_file, trustStorePassword);
+    
+    tmf = TrustManagerFactory.getInstance("SunX509");
+    tmf.init(ts);
+    
+    SSLContext ctx = SSLContext.getInstance("TLS");
+    ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+    SSLSocketFactory ssf = (SSLSocketFactory) ctx.getSocketFactory();
+    SSLSocket clientSocket = (SSLSocket)ssf.createSocket(ip, port); 
+    
+    out = new PrintWriter(clientSocket.getOutputStream(), true);
+    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
   }
 
   public String sendMessage(String msg) throws IOException {
-      log.info("Send: {}", msg);
-      out.println(msg);
-      String resp = in.readLine();
-      return resp;
+    log.info("Send: {}", msg);
+    out.println(msg);
+    String resp = in.readLine();
+    return resp;
   }
 
   public void stopConnection() throws IOException {
-      in.close();
-      out.close();
-      // clientSocket.close();
+    in.close();
+    out.close();
+    // clientSocket.close();
   }
 
 }

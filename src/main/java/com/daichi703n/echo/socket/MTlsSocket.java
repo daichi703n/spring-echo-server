@@ -26,7 +26,6 @@ public class MTlsSocket {
     try {
       server.start(8333, "TLSv1.2", "src/main/resources/keystore/daichi703n-ca.p12", "password".toCharArray(), "src/main/resources/keystore/daichi703n-server.p12", "password".toCharArray());
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -61,21 +60,6 @@ public class MTlsSocket {
     log.info("Start listening port {}",port);
     while (true)
       new EchoClientHandler(sslServerSocket.accept()).start();
-      
-      // SSLSocket sslSocket = (SSLSocket) sslServerSocket.accept();
-      // InetAddress clientAddress = sslSocket.getInetAddress();
-      // int clientPort = sslSocket.getPort();
-      // log.info("Accepted connection from " + clientAddress.getHostAddress() + " on port " + clientPort);
-
-      // BufferedReader in = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
-      // String line = in.readLine();
-      // log.info("Received message from client: " + line);
-
-      // PrintWriter out = new PrintWriter(new OutputStreamWriter(sslSocket.getOutputStream()));
-      // out.println("Hello, World!");
-      // out.flush();
-
-      // sslSocket.close();
   }
   
   public void stop() throws IOException {

@@ -22,34 +22,35 @@ public class TlsClient {
   private static final char[] trustStorePassword = "password".toCharArray();
   
   public void startConnection(String ip, int port) throws UnknownHostException, IOException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException {
-      FileInputStream p12_file = new FileInputStream(trustStoreName);
-      TrustManagerFactory tmf;
-      KeyStore ks;
-      ks = KeyStore.getInstance("pkcs12");
-      ks.load(p12_file, trustStorePassword);
-      
-      tmf = TrustManagerFactory.getInstance("SunX509");
-      tmf.init(ks);
-      SSLContext ctx = SSLContext.getInstance("TLS");
-      ctx.init(null, tmf.getTrustManagers(), null);
-      SSLSocketFactory ssf = (SSLSocketFactory) ctx.getSocketFactory();
-      SSLSocket clientSocket = (SSLSocket)ssf.createSocket(ip, port); 
-      
-      out = new PrintWriter(clientSocket.getOutputStream(), true);
-      in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+    FileInputStream p12_file = new FileInputStream(trustStoreName);
+    TrustManagerFactory tmf;
+    KeyStore ks;
+    ks = KeyStore.getInstance("pkcs12");
+    ks.load(p12_file, trustStorePassword);
+    
+    tmf = TrustManagerFactory.getInstance("SunX509");
+    tmf.init(ks);
+    
+    SSLContext ctx = SSLContext.getInstance("TLS");
+    ctx.init(null, tmf.getTrustManagers(), null);
+    SSLSocketFactory ssf = (SSLSocketFactory) ctx.getSocketFactory();
+    SSLSocket clientSocket = (SSLSocket)ssf.createSocket(ip, port); 
+    
+    out = new PrintWriter(clientSocket.getOutputStream(), true);
+    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
   }
 
   public String sendMessage(String msg) throws IOException {
-      log.info("Send: {}", msg);
-      out.println(msg);
-      String resp = in.readLine();
-      return resp;
+    log.info("Send: {}", msg);
+    out.println(msg);
+    String resp = in.readLine();
+    return resp;
   }
 
   public void stopConnection() throws IOException {
-      in.close();
-      out.close();
-      // clientSocket.close();
+    in.close();
+    out.close();
+    // clientSocket.close();
   }
 
 }

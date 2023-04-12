@@ -24,7 +24,6 @@ public class EchoSocket {
     try {
       server.start(8888);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
