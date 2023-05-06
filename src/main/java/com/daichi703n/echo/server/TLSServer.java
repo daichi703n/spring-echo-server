@@ -1,4 +1,4 @@
-package com.daichi703n.echo.socket;
+package com.daichi703n.echo.server;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,9 +14,9 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 
 @Component
-public class TLSSocket {
+public class TLSServer {
 
-    private static final Logger log = LogManager.getLogger(TLSSocket.class);
+    private static final Logger log = LogManager.getLogger(TLSServer.class);
 
     @EventListener
     @Async

@@ -1,4 +1,4 @@
-package com.daichi703n.echo.socket;
+package com.daichi703n.echo.server;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
