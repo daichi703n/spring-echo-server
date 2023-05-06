@@ -1,30 +1,30 @@
 package com.daichi703n.echo.socket;
 
-import java.net.*;
-import java.security.KeyStore;
-import java.io.*;
-import javax.net.ssl.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+
+@Component
 public class MTLSSocket {
 
     private static final Logger log = LogManager.getLogger(MTLSSocket.class);
 
     @EventListener
     @Async
-    public void run(ContextRefreshedEvent cre) throws Exception {
-        MTLSSocket server = new MTLSSocket();
-
+    public void run(ContextRefreshedEvent event) {
         log.info("Start mTLS Socket");
 
-        server.start(
+        start(
                 8333,
                 "TLSv1.2",
                 "src/main/resources/keystore/daichi703n-ca.p12",
@@ -40,84 +40,42 @@ public class MTLSSocket {
             String trustStoreName,
             char[] trustStorePassword,
             String keyStoreName,
-            char[] keyStorePassword) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("pkcs12");
-        keyStore.load(
-                new FileInputStream(keyStoreName),
-                keyStorePassword
-        );
-
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(keyStore, keyStorePassword);
-
-        KeyStore trustStore = KeyStore.getInstance("pkcs12");
-        trustStore.load(
-                new FileInputStream(trustStoreName),
-                trustStorePassword
-        );
-
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-        trustManagerFactory.init(trustStore);
-
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-
-        try (SSLServerSocket sslServerSocket = (SSLServerSocket) ctx
-                .getServerSocketFactory()
-                .createServerSocket(port)) {
-            sslServerSocket.setEnabledProtocols(new String[]{tlsVersion});
-            sslServerSocket.setNeedClientAuth(true);
-
-            log.info("Start listening port {}", port);
-
-            while (true)
-                new EchoClientHandler(sslServerSocket.accept()).start();
-        }
-    }
-
-    private static class EchoClientHandler extends Thread {
-
-        private final Socket clientSocket;
-
-        public EchoClientHandler(Socket socket) {
-            this.clientSocket = socket;
-        }
-
-        @Override
-        public void run() {
-            InetAddress clientAddress = clientSocket.getInetAddress();
-            int clientPort = clientSocket.getPort();
-
-            log.info(
-                    "Accepted connection from {} on port {}",
-                    clientAddress.getHostAddress(),
-                    clientPort
+            char[] keyStorePassword) {
+        try {
+            KeyStore keyStore = KeyStore.getInstance("pkcs12");
+            keyStore.load(
+                    new FileInputStream(keyStoreName),
+                    keyStorePassword
             );
 
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(keyStore, keyStorePassword);
 
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    log.info("Received: {}", inputLine);
+            KeyStore trustStore = KeyStore.getInstance("pkcs12");
+            trustStore.load(
+                    new FileInputStream(trustStoreName),
+                    trustStorePassword
+            );
 
-                    if (inputLine.equals(".")) {
-                        out.println("bye");
-                        break;
-                    } else {
-                        out.println(inputLine);
-                    }
-                }
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            trustManagerFactory.init(trustStore);
 
-                log.info("Closing connection");
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
 
-                in.close();
-                out.close();
-                clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            try (SSLServerSocket sslServerSocket = (SSLServerSocket) ctx
+                    .getServerSocketFactory()
+                    .createServerSocket(port)) {
+                sslServerSocket.setEnabledProtocols(new String[]{tlsVersion});
+                sslServerSocket.setNeedClientAuth(true);
+
+                log.info("Start listening port {}", port);
+
+                while (true)
+                    new EchoServerThread(sslServerSocket.accept()).start();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

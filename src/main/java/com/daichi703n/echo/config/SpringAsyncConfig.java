@@ -1,11 +1,11 @@
 package com.daichi703n.echo.config;
 
-import java.util.concurrent.Executor;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
@@ -18,6 +18,7 @@ public class SpringAsyncConfig {
         threadPoolTaskExecutor.setQueueCapacity(4);
         threadPoolTaskExecutor.setMaxPoolSize(40);
         threadPoolTaskExecutor.initialize();
+
         return threadPoolTaskExecutor;
     }
 }
