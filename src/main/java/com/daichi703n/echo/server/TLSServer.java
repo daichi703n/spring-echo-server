@@ -46,7 +46,7 @@ public class TLSServer {
             KeyStore keyStore = KeyStore.getInstance("pkcs12");
             keyStore.load(new FileInputStream(keyStoreName), keyStorePassword);
 
-            keyManagerFactory.init(keyStore, trustStorePassword);
+            keyManagerFactory.init(keyStore, keyStorePassword);
 
             SSLContext ctx = SSLContext.getInstance("TLS");
             ctx.init(keyManagerFactory.getKeyManagers(), null, null);
