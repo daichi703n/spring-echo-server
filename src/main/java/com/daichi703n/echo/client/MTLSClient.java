@@ -17,9 +17,9 @@ import java.security.KeyStore;
 
 public class MTLSClient implements AutoCloseable {
 
-    private BufferedReader in;
+    private final BufferedReader in;
 
-    private PrintWriter out;
+    private final PrintWriter out;
 
     private static final Logger log = LogManager.getLogger(MTLSClient.class);
 
@@ -48,8 +48,8 @@ public class MTLSClient implements AutoCloseable {
         SSLSocketFactory ssf = ctx.getSocketFactory();
         SSLSocket clientSocket = (SSLSocket) ssf.createSocket(ip, port);
 
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
+        this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        this.out = new PrintWriter(clientSocket.getOutputStream(), true);
     }
 
     public String sendMessage(String msg) throws IOException {
