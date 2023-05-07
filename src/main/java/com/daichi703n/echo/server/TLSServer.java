@@ -26,8 +26,6 @@ public class TLSServer {
         start(
                 8444,
                 "TLSv1.2",
-                "src/main/resources/keystore/daichi703n-ca.p12",
-                "password".toCharArray(),
                 "src/main/resources/keystore/daichi703n-server.p12",
                 "password".toCharArray()
         );
@@ -36,8 +34,6 @@ public class TLSServer {
     public void start(
             int port,
             String tlsVersion,
-            String trustStoreName,
-            char[] trustStorePassword,
             String keyStoreName,
             char[] keyStorePassword) {
         try {
