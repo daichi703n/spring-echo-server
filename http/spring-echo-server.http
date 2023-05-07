@@ -1,0 +1,24 @@
+### Echo
+POST http://localhost:8080/echo
+Content-Type: text/plain
+
+Hello World!
+
+### TLS
+POST http://localhost:8080/tls
+Content-Type: text/plain
+
+Hello World!
+
+### mTLS
+POST http://localhost:8080/mtls
+Content-Type: text/plain
+
+Hello World!
+
+### mTLS with dummy
+POST http://localhost:8080/mtls
+Content-Type: text/plain
+Dummy-Certificate: true
+
+Hello World!
