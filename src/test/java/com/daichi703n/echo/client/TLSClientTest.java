@@ -2,16 +2,18 @@ package com.daichi703n.echo.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-
 import org.junit.jupiter.api.Test;
 
-class EchoClientTest {
+class TLSClientTest {
 
     @Test
-    void sendMessage_thenCorrect() throws IOException {
-        try (EchoClient client = new EchoClient("127.0.0.1", 8888)) {
+    void sendMessage_thenCorrect() throws Exception {
+        try (TLSClient client = new TLSClient(
+                "127.0.0.1",
+                8444,
+                "src/main/resources/keystore/daichi703n-ca.p12",
+                "password".toCharArray()
+        )) {
             String expected1 = "Hello world!";
             String actual1 = client.sendMessage("Hello world!");
             assertEquals(expected1, actual1);
