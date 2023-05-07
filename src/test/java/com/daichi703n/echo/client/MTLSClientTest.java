@@ -11,9 +11,9 @@ class MTLSClientTest {
         try (MTLSClient client = new MTLSClient(
                 "127.0.0.1",
                 8333,
-                "src/main/resources/keystore/daichi703n-ca.p12",
-                "password".toCharArray(),
                 "src/main/resources/keystore/daichi703n-client.p12",
+                "password".toCharArray(),
+                "src/main/resources/keystore/daichi703n-ca.p12",
                 "password".toCharArray()
         )) {
             String expected1 = "Hello world!";
