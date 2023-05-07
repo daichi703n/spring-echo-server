@@ -10,9 +10,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class EchoClient implements AutoCloseable {
+
     private final BufferedReader in;
 
     private final PrintWriter out;
+
+    private final Socket clientSocket;
 
     private static final Logger log = LogManager.getLogger(EchoClient.class);
 
@@ -22,6 +25,7 @@ public class EchoClient implements AutoCloseable {
 
             this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+            this.clientSocket = clientSocket;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -38,5 +42,6 @@ public class EchoClient implements AutoCloseable {
     public void close() throws IOException {
         in.close();
         out.close();
+        clientSocket.close();
     }
 }

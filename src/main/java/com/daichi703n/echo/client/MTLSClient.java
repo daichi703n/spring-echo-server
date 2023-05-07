@@ -21,6 +21,8 @@ public class MTLSClient implements AutoCloseable {
 
     private final PrintWriter out;
 
+    private final SSLSocket clientSocket;
+
     private static final Logger log = LogManager.getLogger(MTLSClient.class);
 
     public MTLSClient(String ip, int port, String keyStoreName, char[] keyStorePassword, String trustStoreName, char[] trustStorePassword) throws Exception {
@@ -50,6 +52,7 @@ public class MTLSClient implements AutoCloseable {
 
         this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+        this.clientSocket = clientSocket;
     }
 
     public String sendMessage(String msg) throws IOException {
@@ -63,5 +66,6 @@ public class MTLSClient implements AutoCloseable {
     public void close() throws IOException {
         in.close();
         out.close();
+        clientSocket.close();
     }
 }

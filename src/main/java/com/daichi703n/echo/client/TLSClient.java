@@ -20,6 +20,8 @@ public class TLSClient implements AutoCloseable {
 
     private final PrintWriter out;
 
+    private final SSLSocket clientSocket;
+
     private static final Logger log = LogManager.getLogger(TLSClient.class);
 
     public TLSClient(String ip, int port, String trustStoreName, char[] trustStorePassword) {
@@ -42,6 +44,7 @@ public class TLSClient implements AutoCloseable {
 
             this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+            this.clientSocket = clientSocket;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,5 +61,6 @@ public class TLSClient implements AutoCloseable {
     public void close() throws IOException {
         in.close();
         out.close();
+        clientSocket.close();
     }
 }
